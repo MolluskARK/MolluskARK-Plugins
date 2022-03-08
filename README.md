@@ -26,4 +26,5 @@ Very experimental. Allow some structures to always be picked up while others hav
 Requires `AlwaysAllowStructurePickup=true`. Pickup on existing structures is disabled when the saved game is loaded, so this should be loaded at server start.
 
 ### TidyDams
-When a player leaves a beaver dam with only wood, the dam will be automatically destroyed and the wood will drop into an item cache. Configurable cache decay timer.
+When a player leaves a beaver dam with only wood, the dam will be automatically destroyed and the wood will drop into an item cache.<br/><br/>
+This may not work on servers with modded beaver dams or resource items. Configurable cache decay timer.
