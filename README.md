@@ -8,8 +8,8 @@ Work in progress. Allows you to specify `Tribe`, `Allies`, or `All` permission l
 - Access to dead player's inventories and death caches
 - Access to living (unconscious) tamed dino's inventories (Always disabled on PvE, this setting only affects PvP servers)
 - Access to dead tamed dino's inventories and death caches
-- Item caches dropped from a player's or dino's inventory
-- Activate/deactivate structures (e.g., toggling another tribe's generator on/off)
+- Access to item caches intentionally dropped from a player's or dino's inventory
+- Activating/deactivating structures (e.g., toggling another tribe's generator on/off)
 ### PluginTemplate
 Simple example plugin. Demonstrates installing a hook, installing a chat command, and reading from a config file.
 ### SpyglassStats
