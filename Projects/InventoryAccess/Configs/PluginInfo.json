@@ -1,0 +1,6 @@
+{
+  "FullName": "Inventory Access",
+  "Description": "Inventory access permissions",
+  "Version": 0.1,
+  "MinApiVersion": 3.51
+}

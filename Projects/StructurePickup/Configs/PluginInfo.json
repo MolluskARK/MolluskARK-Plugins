@@ -1,0 +1,6 @@
+{
+  "FullName": "Structure Pickup",
+  "Description": "Configurable structure pickup timers",
+  "Version": 0.1,
+  "MinApiVersion": 3.51
+}
