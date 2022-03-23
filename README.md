@@ -3,7 +3,7 @@ Some ARK plugins I've written and found interesting or useful. Anything with a v
 Compiled plugins can be found in **Publish/**
 
 ## Plugins
-### InventoryAccess
+### InventoryAccess v0.1
 Work in progress. Allows you to specify `Tribe`, `Allies`, or `All` permission levels for:
 - Access to living (offline/unconscious) player's inventories
 - Access to dead player's inventories and death caches
@@ -14,17 +14,17 @@ Work in progress. Allows you to specify `Tribe`, `Allies`, or `All` permission l
 
 This restricts actions that are allowed in the game, it does not enable new permissions. E.g., on PvE servers you can't access the inventory of an unconscious player outside your tribe, even with `"LivePlayer": "All"`.
 
-### PluginTemplate
+### PluginTemplate v1.0
 Simple example plugin. Demonstrates installing a hook, installing a chat command, and reading from a config file.
 
-### SpyglassStats
+### SpyglassStats v0.1
 Basic proof of concept, needs fleshing out. My attempt at the classic spyglass mod. Dino stats notification floats in the world near your target when you have a spyglass equipped.<br/><br/>
 Warning: this will crash the server if unloaded while a player has a spyglass equipped.
 
-### StructurePickup
+### StructurePickup v0.1
 Very experimental. Allow some structures to always be picked up while others have a cooldown. A little tricky without mods due to client HUD. Currently I'm fiddling with structure net relevancy VERY frequently on APrimalStructure::Unstasis(), which seems like a bad plan. This also hijacks the structure's `CustomData` field, which seems to be unused but I need to verify it.<br/><br/>
 Requires `AlwaysAllowStructurePickup=true`. Pickup on existing structures is disabled when the saved game is loaded, so this should be loaded at server start.
 
-### TidyDams
+### TidyDams v1.0
 When a player leaves a beaver dam with only wood, the dam will be automatically destroyed and the wood will drop into an item cache.<br/><br/>
 This may not work on servers with modded beaver dams or resource items. Configurable cache decay timer.
