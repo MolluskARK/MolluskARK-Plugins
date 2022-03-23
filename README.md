@@ -1,6 +1,6 @@
 # ARK-Plugins
-Some ARK plugins I've written and found interesting or useful.<br/><br/>
-Compiled plugins ready for use can be found in **Publish/**
+Some ARK plugins I've written and found interesting or useful. Anything with a version number less than 1.0 is incomplete and likely buggy and probably shouldn't be loaded on an active server.<br/><br/>
+Compiled plugins can be found in **Publish/**
 
 ## Plugins
 ### InventoryAccess
