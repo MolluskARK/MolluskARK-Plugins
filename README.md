@@ -17,9 +17,17 @@ This restricts actions that are allowed in the game, it does not enable new perm
 ### PluginTemplate v1.0
 Simple example plugin. Demonstrates installing a hook, installing a chat command, and reading from a config file.
 
-### SpyglassStats v0.1
-Basic proof of concept, needs fleshing out. My attempt at the classic spyglass mod. Dino stats notification floats in the world near your target when you have a spyglass equipped.<br/><br/>
-Warning: this will crash the server if unloaded while a player has a spyglass equipped.
+### SpyglassStats v0.2
+Display dino stats as a notification when players:
+- Look at a dino while a Spyglass is equipped
+- View a dino's inventory
+- Equip a cryopod with a dino inside
+
+Future plans:
+- Choice of "spyglass" weapon. Allow admins to specify blueprint for another weapon to display stats on
+- Configuration options (allow stats on wild/unallied dinos, etc)
+- Try to fix a couple cases where notifications get stuck on
+- Maybe some customization for notification text
 
 ### StructurePickup v0.1
 Very experimental. Allow some structures to always be picked up while others have a cooldown. A little tricky without mods due to client HUD. Currently I'm fiddling with structure net relevancy VERY frequently on APrimalStructure::Unstasis(), which seems like a bad plan. This also hijacks the structure's `CustomData` field, which seems to be unused but I need to verify it.<br/><br/>
