@@ -1,6 +1,6 @@
-# ARK-Plugins
+# MolluskARK-Plugins
 Some ARK plugins I've written and found interesting or useful. Anything with a version number less than 1.0 is incomplete and likely buggy and probably shouldn't be loaded on an active server.<br/><br/>
-Compiled plugins can be found in **Publish/**
+Compiled plugins can be found in **Publish/**.
 
 ## Plugins
 ### InventoryAccess v0.1
@@ -26,8 +26,9 @@ Display dino stats as a notification when players:
 Future plans:
 - Choice of "spyglass" weapon. Allow admins to specify blueprint for another weapon to display stats on
 - Configuration options (allow stats on wild/unallied dinos, etc)
-- Try to fix a couple cases where notifications get stuck on
+- Try to fix a couple cases where notifications get stuck on (`ServerActorCloseRemoteInventory_Implementation()` isn't always called when a remote inventory is closed, but there are related functions that look promising)
 - Maybe some customization for notification text
+- Maybe command(s) to search/display cryopod stats from inventories (I'd love to show cryo stats on the cryo item tooltip, but cryopods use a custom widget that I haven't been able to modify with server plugins. I also haven't been able to force cryos to use the default item widget (whose text can be modified))
 
 ### StructurePickup v0.1
 Very experimental. Allow some structures to always be picked up while others have a cooldown. A little tricky without mods due to client HUD. Currently I'm fiddling with structure net relevancy VERY frequently on APrimalStructure::Unstasis(), which seems like a bad plan. This also hijacks the structure's `CustomData` field, which seems to be unused but I need to verify it.<br/><br/>
