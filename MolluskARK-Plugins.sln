@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PluginTemplate", "Projects\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TidyDams", "Projects\TidyDams\TidyDams.vcxproj", "{55BF6F67-A9C0-464D-A26A-F276F13DC3D3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpyglassStats", "Projects\SpyglassStats\SpyglassStats.vcxproj", "{AA901984-A0FF-425A-BB2D-BBA7B6055B6E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DinoStatsDisplay", "Projects\DinoStatsDisplay\DinoStatsDisplay.vcxproj", "{AA901984-A0FF-425A-BB2D-BBA7B6055B6E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InventoryAccess", "Projects\InventoryAccess\InventoryAccess.vcxproj", "{D3230348-F8DC-4E5E-8051-A4C4B5AED18B}"
 EndProject
