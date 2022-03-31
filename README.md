@@ -3,6 +3,21 @@ Some ARK plugins I've written and found interesting or useful. Anything with a v
 Compiled plugins can be found in **Publish/**.
 
 ## Plugins
+### DinoStatsDisplay v0.3
+Formerly known as SpyglassStats.</br></br>
+Display dino stats as a notification when players:
+- Look at a dino while a Spyglass is equipped
+- View a dino's inventory
+- Equip a cryopod with a dino inside
+
+`/cryos` chat command displays a list of stats for dinos that are in cryopods in your inventory and in the inventory you are viewing (if one is open)
+
+Future plans:
+- Choice of "spyglass" weapon. Allow admins to specify blueprint for another weapon to display stats on
+- Configuration options (allow stats on wild/unallied dinos, chat command name, etc)
+- Some customization for notification text
+- Improve `/cryos` chat command output
+
 ### InventoryAccess v0.1
 Work in progress. Allows you to specify `Tribe`, `Allies`, or `All` permission levels for:
 - Access to living (offline/unconscious) player's inventories
@@ -16,19 +31,6 @@ This restricts actions that are allowed in the game, it does not enable new perm
 
 ### PluginTemplate v1.0
 Simple example plugin. Demonstrates installing a hook, installing a chat command, and reading from a config file.
-
-### SpyglassStats v0.2
-Display dino stats as a notification when players:
-- Look at a dino while a Spyglass is equipped
-- View a dino's inventory
-- Equip a cryopod with a dino inside
-
-Future plans:
-- Choice of "spyglass" weapon. Allow admins to specify blueprint for another weapon to display stats on
-- Configuration options (allow stats on wild/unallied dinos, etc)
-- Try to fix a couple cases where notifications get stuck on (`ServerActorCloseRemoteInventory_Implementation()` isn't always called when a remote inventory is closed, but there are related functions that look promising)
-- Maybe some customization for notification text
-- Maybe command(s) to search/display cryopod stats from inventories (I'd love to show cryo stats on the cryo item tooltip, but cryopods use a custom widget that I haven't been able to modify with server plugins. I also haven't been able to force cryos to use the default item widget (whose text can be modified))
 
 ### StructurePickup v0.1
 Very experimental. Allow some structures to always be picked up while others have a cooldown. A little tricky without mods due to client HUD. Currently I'm fiddling with structure net relevancy VERY frequently on APrimalStructure::Unstasis(), which seems like a bad plan. This also hijacks the structure's `CustomData` field, which seems to be unused but I need to verify it.<br/><br/>
