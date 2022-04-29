@@ -120,7 +120,8 @@ void ShowCryopodStats(UPrimalItem* item, AShooterPlayerController* shooterContro
 	dinoData.DinoData = itemData.CustomDataBytes.ByteArrays[0].Bytes;
 
 	// WARNING: This will not build against the main Michidu/ARK-Server-API repo. SpawnFromDinoData() is not declared there. SpawnFromDinoDataEX() is declared incorrectly there and will lead to undesired behavior and crashes.
-	APrimalDinoCharacter* dino = APrimalDinoCharacter::SpawnFromDinoData(&dinoData, ArkApi::GetApiUtils().GetWorld(), &vec, &rotation, shooterController->TargetingTeamField(), false, shooterController);
+	bool duped;
+	APrimalDinoCharacter* dino = APrimalDinoCharacter::SpawnFromDinoDataEx(&dinoData, ArkApi::GetApiUtils().GetWorld(), &vec, &rotation, &duped, shooterController->TargetingTeamField(), false, shooterController, true);
 	if (!dino)
 		return;
 
@@ -299,7 +300,8 @@ void Hook_AShooterCharacter_OnWeaponEquipped(AShooterCharacter* _this, AShooterW
 	dinoData.DinoData = itemData.CustomDataBytes.ByteArrays[0].Bytes;
 
 	// WARNING: This will not build against the main Michidu/ARK-Server-API repo. SpawnFromDinoData() is not declared there. SpawnFromDinoDataEX() is declared incorrectly there and will lead to undesired behavior and crashes.
-	APrimalDinoCharacter* dino = APrimalDinoCharacter::SpawnFromDinoData(&dinoData, ArkApi::GetApiUtils().GetWorld(), &vec, &rotation, shooterController->TargetingTeamField(), false, shooterController);
+	bool duped;
+	APrimalDinoCharacter* dino = APrimalDinoCharacter::SpawnFromDinoDataEx(&dinoData, ArkApi::GetApiUtils().GetWorld(), &vec, &rotation, &duped, shooterController->TargetingTeamField(), false, shooterController, true);
 	if (!dino)
 		return;
 
