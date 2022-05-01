@@ -1,0 +1,6 @@
+{
+  "FullName": "Cryopod Block",
+  "Description": "Blocks release from Cryopods",
+  "Version": 0.1,
+  "MinApiVersion": 3.51
+}
