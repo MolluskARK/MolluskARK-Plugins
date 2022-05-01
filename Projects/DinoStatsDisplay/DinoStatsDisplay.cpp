@@ -351,6 +351,7 @@ void Hook_APrimalDinoCharacter_OnUncryo(APrimalDinoCharacter* _this, AShooterPla
 	if (!ForPC)
 		return;
 
+	SetSpyglassTargetInfo(ForPC, _this, false);
 	ShowSpyglassTargetInfo(ForPC, 0);
 }
 
