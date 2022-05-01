@@ -3,6 +3,10 @@ Some ARK plugins I've written and found interesting or useful. Anything with a v
 Compiled plugins can be found in **Publish/**.
 
 ## Plugins
+### CryopodBlock v0.1
+Block Cryopods from releasing in areas defined by config file. The `CryopodBlock.zones` console command shows blocked areas.</br></br>
+This plugin works by inserting a native function call into the Cryopod's CanDeploy Blueprint script function.
+
 ### DinoStatsDisplay v0.3
 Formerly known as SpyglassStats.</br></br>
 Display dino stats as a notification when players:
