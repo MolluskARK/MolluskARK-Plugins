@@ -14,6 +14,16 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StructurePickup", "Projects\StructurePickup\StructurePickup.vcxproj", "{40F3C8C7-A246-4395-BD8B-2D274681242C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CryopodBlock", "Projects\CryopodBlock\CryopodBlock.vcxproj", "{28266328-FB63-45BE-B259-65995C8399F3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{511EF20A-08E6-4F05-92B3-C8ADE52DC036} = {511EF20A-08E6-4F05-92B3-C8ADE52DC036}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DinoStealBlock", "Projects\DinoStealBlock\DinoStealBlock.vcxproj", "{6E21E013-BA4F-4588-A0BA-2684BE777E2A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{511EF20A-08E6-4F05-92B3-C8ADE52DC036} = {511EF20A-08E6-4F05-92B3-C8ADE52DC036}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlueprintHooks", "Projects\BlueprintHooks\BlueprintHooks.vcxproj", "{511EF20A-08E6-4F05-92B3-C8ADE52DC036}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +55,14 @@ Global
 		{28266328-FB63-45BE-B259-65995C8399F3}.Debug|x64.Build.0 = Release|x64
 		{28266328-FB63-45BE-B259-65995C8399F3}.Release|x64.ActiveCfg = Release|x64
 		{28266328-FB63-45BE-B259-65995C8399F3}.Release|x64.Build.0 = Release|x64
+		{6E21E013-BA4F-4588-A0BA-2684BE777E2A}.Debug|x64.ActiveCfg = Release|x64
+		{6E21E013-BA4F-4588-A0BA-2684BE777E2A}.Debug|x64.Build.0 = Release|x64
+		{6E21E013-BA4F-4588-A0BA-2684BE777E2A}.Release|x64.ActiveCfg = Release|x64
+		{6E21E013-BA4F-4588-A0BA-2684BE777E2A}.Release|x64.Build.0 = Release|x64
+		{511EF20A-08E6-4F05-92B3-C8ADE52DC036}.Debug|x64.ActiveCfg = Release|x64
+		{511EF20A-08E6-4F05-92B3-C8ADE52DC036}.Debug|x64.Build.0 = Release|x64
+		{511EF20A-08E6-4F05-92B3-C8ADE52DC036}.Release|x64.ActiveCfg = Release|x64
+		{511EF20A-08E6-4F05-92B3-C8ADE52DC036}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

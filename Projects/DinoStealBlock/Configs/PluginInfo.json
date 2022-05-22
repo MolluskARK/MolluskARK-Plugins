@@ -1,0 +1,6 @@
+{
+  "FullName": "Dino Steal Block",
+  "Description": "Prevent dinos from stealing player's items",
+  "Version": 0.1,
+  "MinApiVersion": 3.51
+}

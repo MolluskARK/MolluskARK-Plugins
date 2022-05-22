@@ -9,8 +9,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{28266328-fb63-45be-b259-65995c8399f3}</ProjectGuid>
-    <RootNamespace>CryopodBlock</RootNamespace>
+    <ProjectGuid>{511ef20a-08e6-4f05-92b3-c8ade52dc036}</ProjectGuid>
+    <RootNamespace>BlueprintHooks</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -41,12 +41,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);PLUGIN_NAME="$(ProjectName)"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BLUEPRINT_HOOKS_EXPORTS;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);PLUGIN_NAME="$(ProjectName)"</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\ARK-Server-API\version\Core\Public;$(SolutionDir)\ARK-Server-Plugins\Permissions\Permissions\Public;$(SolutionDir)\Projects\BlueprintHooks</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\ARK-Server-API\version\Core\Public;$(SolutionDir)\ARK-Server-Plugins\Permissions\Permissions\Public</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -54,10 +54,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>true</EnableUAC>
-      <AdditionalLibraryDirectories>$(SolutionDir)\ARK-Server-API\out_lib;$(SolutionDir)\ARK-Server-Plugins\Permissions\out_lib;$(SolutionDir)Public\Lib;$(SolutionDir)\Projects\BlueprintHooks\Release\BlueprintHooks\Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\ARK-Server-API\out_lib;$(SolutionDir)\ARK-Server-Plugins\Permissions\out_lib;$(SolutionDir)Public\Lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>if exist $(ProjectDir)Configs\ (Xcopy /y /q Configs\* $(OutDir) &amp;&amp; echo "Copying $(ProjectDir)Configs\ -&gt; $(OutDir)")</Command>
+      <Command>if exist $(ProjectDir)Configs\ (Xcopy /y /q Configs\* $(OutDir) &amp;&amp; echo "Copying $(ProjectDir)Configs\ -&gt; $(OutDir)") &amp;&amp; if exist $(OutDir)$(ProjectName).lib (Xcopy /y $(OutDir)$(ProjectName).lib $(OutDir)Lib\) &amp;&amp; Xcopy /y $(ProjectDir)BlueprintHooks.h $(OutDir)Lib\ &amp;&amp; del /f /q  $(OutDir)$(ProjectName).lib &amp;&amp; del /f /q  $(OutDir)$(ProjectName).exp</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>
@@ -65,7 +65,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CryopodBlock.cpp" />
+    <ClCompile Include="BlueprintHooks.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BlueprintHooks.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

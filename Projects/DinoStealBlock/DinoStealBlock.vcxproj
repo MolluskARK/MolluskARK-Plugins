@@ -9,8 +9,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{28266328-fb63-45be-b259-65995c8399f3}</ProjectGuid>
-    <RootNamespace>CryopodBlock</RootNamespace>
+    <ProjectGuid>{6e21e013-ba4f-4588-a0ba-2684be777e2a}</ProjectGuid>
+    <RootNamespace>DinoStealBlock</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -65,7 +65,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CryopodBlock.cpp" />
+    <ClCompile Include="DinoStealBlock.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

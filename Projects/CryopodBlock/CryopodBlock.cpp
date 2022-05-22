@@ -1,15 +1,11 @@
 #include <fstream>
 #include <cmath>
 #include "API/ARK/Ark.h"
+#include "BlueprintHooks.h"
 #include "json.hpp"
 
 #pragma comment(lib, "ArkApi.lib")
-
-#define UPROP_FLAG_Edit                0x001
-#define UPROP_FLAG_Parm                0x080
-#define UPROP_FLAG_OutParm             0x100
-
-#define USCRIPT_EX_FINAL_FUNCTION_SIZE 9
+#pragma comment(lib, "BlueprintHooks.lib")
 
 nlohmann::json config;
 
@@ -28,187 +24,10 @@ UFunction* GetUFunction(UClass* inClass, FString* funcName)
 	return nullptr;
 }
 
-
-// scriptFunction = The BP script function we are setting a hook in
-// nativeFunction = The native function to call at the end of the script
-void SetScriptHook(UFunction* scriptUFunction, FNativeFuncPtr nativeFunction)
+void ScriptHook_CanDeploy(UObject* _this, BlueprintHooks::FFrame* Stack)
 {
-	if (!scriptUFunction)
-	{
-		Log::GetLog()->error("SetScriptHook() - null scriptUFunction");
+	if (!_this || !_this->IsA(UPrimalItem::GetPrivateStaticClass()))
 		return;
-	}
-
-	if (!nativeFunction)
-	{
-		Log::GetLog()->error("SetScriptHook() - null nativeFunction");
-		return;
-	}
-
-	// For now, initialize the new UFunction by copying the one we're hooking.
-	// This may not be a good idea, need to investigate!
-	UFunction* hookUFunction = static_cast<UFunction*>(malloc(scriptUFunction->ClassField()->PropertiesSizeField()));
-	if (!hookUFunction)
-	{
-		Log::GetLog()->error("SetScriptHook() - null hookUFunction");
-		return;
-	}
-	memcpy(hookUFunction, scriptUFunction, scriptUFunction->ClassField()->PropertiesSizeField());
-
-	// Set the native function flag and point the UFunction to our native function
-	FString funcName = FString("Hook_") + hookUFunction->NameField().ToString();
-	hookUFunction->NameField() = FName(funcName.ToString().c_str(), EFindName::FNAME_Add);
-	hookUFunction->FunctionFlagsField() = static_cast<unsigned int>(EFunctionFlags::FUNC_Native);
-	hookUFunction->FuncField() = nativeFunction;
-
-	int scriptSize = scriptUFunction->ScriptField().Num();
-	if (scriptSize == 0)
-	{
-		Log::GetLog()->error("SetScriptHook() - Not a script function");
-		return;
-	}
-
-	if (scriptSize < 3)
-	{
-		Log::GetLog()->error("SetScriptHook() - Ex_Return not found (< 3 bytes)");
-		return;
-	}
-
-	// Find the Ex_Return offset
-	int hookOffset;
-	if ((scriptUFunction->ScriptField()[scriptSize - 3] == static_cast<unsigned char>(EExprToken::EX_Return)) &&
-		(scriptUFunction->ScriptField()[scriptSize - 2] == static_cast<unsigned char>(EExprToken::EX_Nothing)) &&
-		(scriptUFunction->ScriptField()[scriptSize - 1] == static_cast<unsigned char>(EExprToken::EX_EndOfScript)))
-	{
-		hookOffset = scriptSize - 3;
-	}
-	else
-	{
-		if (scriptSize < 11)
-		{
-			Log::GetLog()->error("SetScriptHook() - Ex_Return not found (< 11 bytes)");
-			return;
-		}
-
-		if ((scriptUFunction->ScriptField()[scriptSize - 11] == static_cast<unsigned char>(EExprToken::EX_Return)) &&
-			(scriptUFunction->ScriptField()[scriptSize - 10] == static_cast<unsigned char>(EExprToken::EX_LocalOutVariable)) &&
-			(scriptUFunction->ScriptField()[scriptSize - 1] == static_cast<unsigned char>(EExprToken::EX_EndOfScript)))
-		{
-			hookOffset = scriptSize - 11;
-		}
-		else
-		{
-			Log::GetLog()->error("SetScriptHook() - Ex_Return not found");
-			return;
-		}
-	}
-
-	// Insert a call to our new UFunction at hookOffset
-	unsigned char instructions[USCRIPT_EX_FINAL_FUNCTION_SIZE] = {
-		static_cast<unsigned char>(EExprToken::EX_FinalFunction),
-		  reinterpret_cast<DWORD64>(hookUFunction) >> 0 & 0xFF,
-		  reinterpret_cast<DWORD64>(hookUFunction) >> 8 & 0xFF,
-		  reinterpret_cast<DWORD64>(hookUFunction) >> 16 & 0xFF,
-		  reinterpret_cast<DWORD64>(hookUFunction) >> 24 & 0xFF,
-		  reinterpret_cast<DWORD64>(hookUFunction) >> 32 & 0xFF,
-		  reinterpret_cast<DWORD64>(hookUFunction) >> 40 & 0xFF,
-		  reinterpret_cast<DWORD64>(hookUFunction) >> 48 & 0xFF,
-		  reinterpret_cast<DWORD64>(hookUFunction) >> 56 & 0xFF
-	};
-	for (int i = USCRIPT_EX_FINAL_FUNCTION_SIZE - 1; i >= 0; --i)
-	{
-		scriptUFunction->ScriptField().Insert(instructions[i], hookOffset);
-	}
-
-	Log::GetLog()->info("Script hook set - " + scriptUFunction->NameField().ToString().ToString() + " -> " + hookUFunction->NameField().ToString().ToString());
-}
-
-void UnsetScriptHook(UFunction* scriptUFunction)
-{
-	if (!scriptUFunction)
-	{
-		Log::GetLog()->error("SetScriptHook() - null scriptUFunction");
-		return;
-	}
-
-	int scriptSize = scriptUFunction->ScriptField().Num();
-	if (scriptSize == 0)
-	{
-		Log::GetLog()->error("SetScriptHook() - Not a script function");
-		return;
-	}
-
-	if (scriptSize < 12)
-	{
-		Log::GetLog()->error("SetScriptHook() - Hook not found (< 12 bytes)");
-		return;
-	}
-
-	// Find the Ex_Return offset
-	int hookOffset;
-	UFunction* hookUFunction = nullptr;
-	if ((scriptUFunction->ScriptField()[scriptSize - 12] == static_cast<unsigned char>(EExprToken::EX_FinalFunction)) &&
-		(scriptUFunction->ScriptField()[scriptSize - 3] == static_cast<unsigned char>(EExprToken::EX_Return)) &&
-		(scriptUFunction->ScriptField()[scriptSize - 2] == static_cast<unsigned char>(EExprToken::EX_Nothing)) &&
-		(scriptUFunction->ScriptField()[scriptSize - 1] == static_cast<unsigned char>(EExprToken::EX_EndOfScript)))
-	{
-		hookOffset = scriptSize - 12;
-		hookUFunction = reinterpret_cast<UFunction*>(
-			static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 11]) << 0 |
-			static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 10]) << 8 |
-			static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 9]) << 16 |
-			static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 8]) << 24 |
-			static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 7]) << 32 |
-			static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 6]) << 40 |
-			static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 5]) << 48 |
-			static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 4]) << 56);
-	}
-	else
-	{
-		if (scriptSize < 20)
-		{
-			Log::GetLog()->error("SetScriptHook() - Hook not found (< 20 bytes)");
-			return;
-		}
-
-		if ((scriptUFunction->ScriptField()[scriptSize - 20] == static_cast<unsigned char>(EExprToken::EX_FinalFunction)) &&
-			(scriptUFunction->ScriptField()[scriptSize - 11] == static_cast<unsigned char>(EExprToken::EX_Return)) &&
-			(scriptUFunction->ScriptField()[scriptSize - 10] == static_cast<unsigned char>(EExprToken::EX_LocalOutVariable)) &&
-			(scriptUFunction->ScriptField()[scriptSize - 1] == static_cast<unsigned char>(EExprToken::EX_EndOfScript)))
-		{
-			hookOffset = scriptSize - 20;
-			hookUFunction = reinterpret_cast<UFunction*>(
-				static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 19]) << 0 |
-				static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 18]) << 8 |
-				static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 17]) << 16 |
-				static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 16]) << 24 |
-				static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 15]) << 32 |
-				static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 14]) << 40 |
-				static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 13]) << 48 |
-				static_cast<DWORD64>(scriptUFunction->ScriptField()[scriptSize - 12]) << 56);
-		}
-		else
-		{
-			Log::GetLog()->error("SetScriptHook() - Hook not found");
-			return;
-		}
-	}
-
-	scriptUFunction->ScriptField().RemoveAt(hookOffset, USCRIPT_EX_FINAL_FUNCTION_SIZE, true);
-	free(hookUFunction);
-
-	Log::GetLog()->info("Blueprint script hook unset - " + scriptUFunction->NameField().ToString().ToString());
-}
-
-void ScriptHook_CanDeploy(UObject* _this, FFrame* Stack, void* const Result)
-{
-	if (!_this || !Stack->NodeField() || !_this->IsA(UPrimalItem::GetPrivateStaticClass()))
-		return;
-
-	int numOut = 0;
-	for (UProperty* property = Stack->NodeField()->PropertyLinkField(); property; property = property->PropertyLinkNextField())
-		if ((property->PropertyFlagsField() & UPROP_FLAG_Parm) && (property->PropertyFlagsField() & UPROP_FLAG_OutParm))
-			++numOut;
 
 	UPrimalItem* item = static_cast<UPrimalItem*>(_this);
 	AShooterCharacter* shooterCharacter = item->GetOwnerPlayer();
@@ -219,22 +38,10 @@ void ScriptHook_CanDeploy(UObject* _this, FFrame* Stack, void* const Result)
 	if (!shooterController)
 		return;
 
-	bool* can = nullptr;
-	FVector* newLocation = nullptr;
-	FString* failureReason = nullptr;
+	bool* can = BlueprintHooks::GetFunctionOutput<bool>(Stack, FString("Can"));
+	FVector* newLocation = BlueprintHooks::GetFunctionOutput<FVector>(Stack, FString("NewLocation"));
+	FString* failureReason = BlueprintHooks::GetFunctionOutput<FString>(Stack, FString("FailureReason"));
 
-	FOutParmRec* outRec = Stack->OutParmsField();
-	for (int i = 0; i < numOut; ++i)
-	{
-		if (outRec->PropertyField()->NameField().ToString() == FString("Can"))
-			can = reinterpret_cast<bool*>(outRec->PropAddrField());
-		else if (outRec->PropertyField()->NameField().ToString() == FString("NewLocation"))
-			newLocation = reinterpret_cast<FVector*>(outRec->PropAddrField());
-		else if (outRec->PropertyField()->NameField().ToString() == FString("FailureReason"))
-			failureReason = reinterpret_cast<FString*>(outRec->PropAddrField());
-
-		outRec = outRec->NextOutParmField();
-	}
 	if (!can || !newLocation || !failureReason)
 	{
 		Log::GetLog()->error("Output param not found");
@@ -266,12 +73,12 @@ void Hook_AShooterGameMode_InitGame(AShooterGameMode* _this, FString* MapName, F
 {
 	AShooterGameMode_InitGame_original(_this, MapName, Options, ErrorMessage);
 
-	UClass* cryoClass = cryoClass = UVictoryCore::BPLoadClass(&cryoClassPath);
+	UClass* cryoClass = UVictoryCore::BPLoadClass(&cryoClassPath);
 	UFunction* canDeploy = GetUFunction(cryoClass, &canDeployName);
 	if (canDeploy)
-		SetScriptHook(canDeploy, ScriptHook_CanDeploy);
+		BlueprintHooks::SetBlueprintPostHook(canDeploy, ScriptHook_CanDeploy);
 	else
-		Log::GetLog()->error("Load() - CanDeploy UFunction not found");
+		Log::GetLog()->error("InitGame() - CanDeploy UFunction not found");
 }
 
 void ZonesCmd(APlayerController* playerController, FString*, bool)
@@ -385,7 +192,9 @@ void Load()
 	UClass* cryoClass = cryoClass = UVictoryCore::BPLoadClass(&cryoClassPath);
 	UFunction* canDeploy = GetUFunction(cryoClass, &canDeployName);
 	if (canDeploy)
-		SetScriptHook(canDeploy, ScriptHook_CanDeploy);
+	{
+		BlueprintHooks::SetBlueprintPostHook(canDeploy, ScriptHook_CanDeploy);
+	}
 	else
 		Log::GetLog()->error("Load() - CanDeploy UFunction not found");
 }
@@ -403,10 +212,11 @@ void Unload()
 
 	UClass* cryoClass = cryoClass = UVictoryCore::BPLoadClass(&cryoClassPath);
 	UFunction* canDeploy = GetUFunction(cryoClass, &canDeployName);
-	if (canDeploy)
-		UnsetScriptHook(canDeploy);
+	if (canDeploy) {
+		BlueprintHooks::DisableBlueprintPostHook(canDeploy, ScriptHook_CanDeploy);
+	}
 	else
-		Log::GetLog()->error("Load() - CanDeploy UFunction not found");
+		Log::GetLog()->error("Unload() - CanDeploy UFunction not found");
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
