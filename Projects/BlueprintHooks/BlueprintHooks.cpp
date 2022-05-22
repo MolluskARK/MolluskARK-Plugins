@@ -1,6 +1,8 @@
 #include "API/ARK/Ark.h"
 #include "BlueprintHooks.h"
+#include "json.hpp"
 
+#include <fstream>
 #include <unordered_map>
 
 #pragma comment(lib, "ArkApi.lib")
@@ -26,18 +28,15 @@ namespace BlueprintHooks
 		static UClass* GetPrivateStaticClass() { return NativeCall<UClass*>(nullptr, "UFunction.GetPrivateStaticClass"); }
 	};
 
-	struct UInterface {
-		static UClass* GetPrivateStaticClass() { return NativeCall<UClass*>(nullptr, "UInterface.GetPrivateStaticClass"); }
-	};
-	
 	UFunction* dispatcherUFunction = nullptr;
-	std::unordered_map<::UFunction*, std::vector<BlueprintHookFuncPtr>> preHooks;
-	std::unordered_map<::UFunction*, std::vector<BlueprintHookFuncPtr>> postHooks;
+	std::unordered_map<::UFunction*, std::vector<BlueprintHookFuncPtr>> preHooks, postHooks;
 
 	void BlueprintHookDispatcher(UObject* obj, FFrame* stack, void* const result)
 	{
 		unsigned char instructions[BLUEPRINT_HOOK_USCRIPT_SIZE];
 		unsigned char* savedCode;
+
+		Log::GetLog()->debug("Dispatcher called - " + stack->NodeField()->NameField().ToString().ToString());
 
 		// Execute pre-hooks
 		for (BlueprintHookFuncPtr preHook : preHooks[reinterpret_cast<::UFunction*>(stack->NodeField())])
@@ -88,6 +87,7 @@ namespace BlueprintHooks
 		for (int i = 0; i < BLUEPRINT_HOOK_USCRIPT_SIZE; ++i)
 			blueprintFunction->ScriptField().Insert(instructions[i], i);
 
+		Log::GetLog()->debug("Dispatcher installed - " + blueprintFunction->NameField().ToString().ToString());
 		return true;
 	}
 
@@ -99,6 +99,7 @@ namespace BlueprintHooks
 		for (int i = 0; i < BLUEPRINT_HOOK_USCRIPT_SIZE; ++i)
 			blueprintFunction->ScriptField().RemoveAt(0);
 
+		Log::GetLog()->debug("Dispatcher removed - " + blueprintFunction->NameField().ToString().ToString());
 		return true;
 	}
 
@@ -145,6 +146,8 @@ namespace BlueprintHooks
 		// Add the hook
 		preHooks[blueprintFunction].push_back(hookFunction);
 
+		Log::GetLog()->debug("Pre-hook set - " + blueprintFunction->NameField().ToString().ToString() +
+			" (" + std::to_string(preHooks[blueprintFunction].size()) + " pre-hooks, " + std::to_string(postHooks[blueprintFunction].size()) + " post-hooks)");
 		return true;
 	}
 
@@ -192,6 +195,8 @@ namespace BlueprintHooks
 		// Add the hook
 		postHooks[blueprintFunction].push_back(hookFunction);
 
+		Log::GetLog()->debug("Post-hook set - " + blueprintFunction->NameField().ToString().ToString() +
+			" (" + std::to_string(preHooks[blueprintFunction].size()) + " pre-hooks, " + std::to_string(postHooks[blueprintFunction].size()) + " post-hooks)");
 		return true;
 	}
 
@@ -227,6 +232,8 @@ namespace BlueprintHooks
 			}
 		}
 
+		Log::GetLog()->debug("Pre-hook removed - " + blueprintFunction->NameField().ToString().ToString() +
+			" (" + std::to_string(preHooks[blueprintFunction].size()) + " pre-hooks, " + std::to_string(postHooks[blueprintFunction].size()) + " post-hooks)");
 		return true;
 	}
 
@@ -262,13 +269,41 @@ namespace BlueprintHooks
 			}
 		}
 
+		Log::GetLog()->debug("Post-hook removed - " + blueprintFunction->NameField().ToString().ToString() +
+			" (" + std::to_string(preHooks[blueprintFunction].size()) + " pre-hooks, " + std::to_string(postHooks[blueprintFunction].size()) + " post-hooks)");
 		return true;
 	}
+}
+
+void ReadConfig()
+{
+	nlohmann::json config;
+	const std::string config_path = ArkApi::Tools::GetCurrentDir() + "/ArkApi/Plugins/" + PLUGIN_NAME + "/config.json";
+	std::ifstream file{ config_path };
+	if (!file.is_open())
+		throw std::runtime_error("Can't open config.json");
+
+	file >> config;
+
+	file.close();
+
+	if (config["Debug"])
+		Log::GetLog()->set_level(spdlog::level::debug);
 }
 
 void Load()
 {
 	Log::Get().Init(PLUGIN_NAME);
+
+	try
+	{
+		ReadConfig();
+	}
+	catch (const std::exception& error)
+	{
+		Log::GetLog()->error(error.what());
+		throw;
+	}
 
 	// Create the hook dispatcher UFunction
 	BlueprintHooks::dispatcherUFunction = static_cast<BlueprintHooks::UFunction*>(malloc(BlueprintHooks::UFunction::GetPrivateStaticClass()->PropertiesSizeField()));
@@ -278,12 +313,13 @@ void Load()
 	BlueprintHooks::dispatcherUFunction->NameField() = FName(FString("BlueprintHooks_Dispatcher").ToString().c_str(), EFindName::FNAME_Add);
 	BlueprintHooks::dispatcherUFunction->FunctionFlagsField() = static_cast<unsigned int>(EFunctionFlags::FUNC_Native);
 	BlueprintHooks::dispatcherUFunction->FuncField() = BlueprintHooks::BlueprintHookDispatcher;
-	// The outer class should not be a child of UInterface, otherwise UFunction::Invoke() could pass the wrong UObject address
-	BlueprintHooks::dispatcherUFunction->OuterField() = APrimalDinoCharacter::GetPrivateStaticClass();
+	BlueprintHooks::dispatcherUFunction->OuterField() = APrimalDinoCharacter::GetPrivateStaticClass();  // This seems to work (might have issues with UFunction::Invoke())
 }
 
 void Unload()
 {
+	//TODO Handle hooks still loaded
+
 	if (BlueprintHooks::dispatcherUFunction)
 		free(BlueprintHooks::dispatcherUFunction);
 }

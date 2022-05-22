@@ -73,6 +73,12 @@ void Hook_AShooterGameMode_InitGame(AShooterGameMode* _this, FString* MapName, F
 {
 	AShooterGameMode_InitGame_original(_this, MapName, Options, ErrorMessage);
 
+	if (!ArkApi::Tools::IsPluginLoaded("BlueprintHooks"))
+	{
+		Log::GetLog()->error("InitGame() - BlueprintHooks not loaded");
+		return;
+	}
+
 	UClass* cryoClass = UVictoryCore::BPLoadClass(&cryoClassPath);
 	UFunction* canDeploy = GetUFunction(cryoClass, &canDeployName);
 	if (canDeploy)
@@ -189,6 +195,12 @@ void Load()
 	if (ArkApi::GetApiUtils().GetStatus() != ArkApi::ServerStatus::Ready)
 		return;
 
+	if (!ArkApi::Tools::IsPluginLoaded("BlueprintHooks"))
+	{
+		Log::GetLog()->error("Load() - BlueprintHooks not loaded");
+		return;
+	}
+
 	UClass* cryoClass = cryoClass = UVictoryCore::BPLoadClass(&cryoClassPath);
 	UFunction* canDeploy = GetUFunction(cryoClass, &canDeployName);
 	if (canDeploy)
@@ -209,6 +221,12 @@ void Unload()
 	ArkApi::GetCommands().RemoveConsoleCommand(PLUGIN_NAME".Zones");
 
 	DISABLE_HOOK(AShooterGameMode, InitGame);
+
+	if (!ArkApi::Tools::IsPluginLoaded("BlueprintHooks"))
+	{
+		Log::GetLog()->error("Unload() - BlueprintHooks not loaded");
+		return;
+	}
 
 	UClass* cryoClass = cryoClass = UVictoryCore::BPLoadClass(&cryoClassPath);
 	UFunction* canDeploy = GetUFunction(cryoClass, &canDeployName);

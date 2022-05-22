@@ -48,6 +48,12 @@ void Hook_AShooterGameMode_InitGame(AShooterGameMode* _this, FString* MapName, F
 {
 	AShooterGameMode_InitGame_original(_this, MapName, Options, ErrorMessage);
 
+	if (!ArkApi::Tools::IsPluginLoaded("BlueprintHooks"))
+	{
+		Log::GetLog()->error("InitGame() - BlueprintHooks not loaded");
+		return;
+	}
+
 	cryoClass = UVictoryCore::BPLoadClass(&cryoClassPath);
 	if (!cryoClass)
 		Log::GetLog()->error("InitGame() - Cryopod class not found");
@@ -137,6 +143,12 @@ void Load()
 	if (ArkApi::GetApiUtils().GetStatus() != ArkApi::ServerStatus::Ready)
 		return;
 
+	if (!ArkApi::Tools::IsPluginLoaded("BlueprintHooks"))
+	{
+		Log::GetLog()->error("Load() - BlueprintHooks not loaded");
+		return;
+	}
+
 	cryoClass = UVictoryCore::BPLoadClass(&cryoClassPath);
 	if (!cryoClass)
 		Log::GetLog()->error("Load() - Cryopod class not found");
@@ -158,12 +170,18 @@ void Unload()
 
 	DISABLE_HOOK(AShooterGameMode, InitGame);
 
+	if (!ArkApi::Tools::IsPluginLoaded("BlueprintHooks"))
+	{
+		Log::GetLog()->error("Unload() - BlueprintHooks not loaded");
+		return;
+	}
+
 	UClass* pegoClass = pegoClass = UVictoryCore::BPLoadClass(&pegoClassPath);
 	UFunction* canStealItem = GetUFunction(pegoClass, &canStealItemName);
 	if (canStealItem)
 		BlueprintHooks::DisableBlueprintPostHook(canStealItem, ScriptHook_CanStealItem);
 	else
-		Log::GetLog()->error("Load() - CanStealItem UFunction not found");
+		Log::GetLog()->error("Unload() - CanStealItem UFunction not found");
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
