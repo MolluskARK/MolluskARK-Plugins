@@ -4,6 +4,7 @@
 
 #pragma comment(lib, "ArkApi.lib")
 
+DECLARE_HOOK(AShooterGameMode_InitGame, void, AShooterGameMode*, FString*, FString*, FString*);
 DECLARE_HOOK(UPrimalInventoryComponent_ServerCloseRemoteInventory, void, UPrimalInventoryComponent*, AShooterPlayerController*);
 
 int configCacheDecayMins;
@@ -13,22 +14,31 @@ UClass* damClass;
 FString woodClassPath = "Blueprint'/Game/PrimalEarth/CoreBlueprints/Resources/PrimalItemResource_Wood.PrimalItemResource_Wood'";
 UClass* woodClass;
 
+void Hook_AShooterGameMode_InitGame(AShooterGameMode* _this, FString* MapName, FString* Options, FString* ErrorMessage)
+{
+	AShooterGameMode_InitGame_original(_this, MapName, Options, ErrorMessage);
+
+	damClass = UVictoryCore::BPLoadClass(&damClassPath);
+	if (!damClass)
+		Log::GetLog()->error("InitGame() - Beaver dam class not found");
+
+	woodClass = UVictoryCore::BPLoadClass(&woodClassPath);
+	if (!woodClass)
+		Log::GetLog()->error("InitGame() - Wood class not found");
+}
+
 void Hook_UPrimalInventoryComponent_ServerCloseRemoteInventory(UPrimalInventoryComponent* _this, AShooterPlayerController* ByPC)
 {
 	bool isOnlyWood = true;
-	APrimalStructureItemContainer* cache;
 
 	UPrimalInventoryComponent_ServerCloseRemoteInventory_original(_this, ByPC);
 
-	if (!damClass)
-		damClass = UVictoryCore::BPLoadClass(&damClassPath);
+	if (!damClass || !woodClass)
+		return;
 
 	// If the closed inventory is a dam that only contains wood, drop it into an item cache
 	if (_this->IsA(damClass) && (_this->InventoryItemsField().Num() > 0))
 	{
-		if (!woodClass)
-			woodClass = UVictoryCore::BPLoadClass(&woodClassPath);
-
 		for (UPrimalItem* item : _this->InventoryItemsField())
 		{
 			if (item && !item->IsA(woodClass))
@@ -38,8 +48,10 @@ void Hook_UPrimalInventoryComponent_ServerCloseRemoteInventory(UPrimalInventoryC
 			}
 		}
 
-		if (isOnlyWood)
-			_this->DropInventoryDeposit(ArkApi::GetApiUtils().GetWorld()->GetTimeSeconds() + (configCacheDecayMins * 60), false, false, nullptr, nullptr, &cache, nullptr, FString(""), FString(""), -1, 300, false, -1, false, nullptr, false);
+		if (isOnlyWood) {
+			FVector vec = { 0, 0, 0 };
+			_this->BPDropInventoryDeposit(ArkApi::GetApiUtils().GetWorld()->GetTimeSeconds() + (configCacheDecayMins * 60), INT_MAX, false, vec);
+		}
 	}
 }
 
@@ -115,8 +127,21 @@ void Load()
 	ArkApi::GetCommands().AddConsoleCommand(PLUGIN_NAME".Reload", &ReloadConfig);
 	ArkApi::GetCommands().AddRconCommand(PLUGIN_NAME".Reload", &ReloadConfigRcon);
 
+	ArkApi::GetHooks().SetHook("AShooterGameMode.InitGame", &Hook_AShooterGameMode_InitGame,
+		&AShooterGameMode_InitGame_original);
 	ArkApi::GetHooks().SetHook("UPrimalInventoryComponent.ServerCloseRemoteInventory", &Hook_UPrimalInventoryComponent_ServerCloseRemoteInventory,
 		&UPrimalInventoryComponent_ServerCloseRemoteInventory_original);
+
+	if (ArkApi::GetApiUtils().GetStatus() != ArkApi::ServerStatus::Ready)
+		return;
+
+	damClass = UVictoryCore::BPLoadClass(&damClassPath);
+	if (!damClass)
+		Log::GetLog()->error("Load() - Beaver dam class not found");
+
+	woodClass = UVictoryCore::BPLoadClass(&woodClassPath);
+	if (!woodClass)
+		Log::GetLog()->error("Load() - Wood class not found");
 }
 
 void Unload()
@@ -124,6 +149,7 @@ void Unload()
 	ArkApi::GetCommands().RemoveConsoleCommand(PLUGIN_NAME".Reload");
 	ArkApi::GetCommands().RemoveRconCommand(PLUGIN_NAME".Reload");
 
+	ArkApi::GetHooks().DisableHook("AShooterGameMode.InitGame", &Hook_AShooterGameMode_InitGame);
 	ArkApi::GetHooks().DisableHook("UPrimalInventoryComponent.ServerCloseRemoteInventory", &Hook_UPrimalInventoryComponent_ServerCloseRemoteInventory);
 }
 
